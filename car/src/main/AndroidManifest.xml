@@ -1,0 +1,19 @@
+<manifest package="com.nuvio.car">
+
+    <application>
+        <service
+            android:name=".NuvioCarAppService"
+            android:exported="true"
+            android:foregroundServiceType="mediaPlayback">
+
+            <intent-filter>
+                <action android:name="androidx.car.app.CarAppService" />
+            </intent-filter>
+
+            <meta-data
+                android:name="androidx.car.app.CarAppService"
+                android:value=".NuvioCarAppService" />
+        </service>
+    </application>
+
+</manifest>
