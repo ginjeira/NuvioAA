@@ -27,9 +27,10 @@ class HomeScreen(carContext: CarContext) : Screen(carContext) {
                     .build()
             )
             .build()
-
-        return PaneTemplate.Builder(itemList)
+        
+        return ListTemplate.Builder()
             .setTitle("Nuvio")
+            .setSingleList(itemList)
             .build()
     }
 }
