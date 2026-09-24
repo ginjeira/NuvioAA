@@ -1,67 +1,85 @@
 <div align="center">
 
-  <img src="https://nuvio.tv/assets/nuvio-app-logo-wordmark.webp" alt="Nuvio" width="320" />
+  <img src="https://nuvio.tv/assets/nuvio-app-logo-wordmark.webp" alt="NuvioAA" width="320" />
+
+  <h1>NuvioAA — Android Auto Media & Video Streamer</h1>
 
   <p>
-    A free, open-source media app for your phone, your desktop, your TV, and Android Auto.
+    Aplicativo de mídia e streaming de vídeo de código aberto com suporte total ao <b>Android Auto</b>.
     <br />
-    Bring your own sources. Nuvio turns them into a library with artwork, ratings, subtitles, and your place saved on every screen.
+    Navegue por catálogos de addons (Stremio/Real-Debrid), assista a filmes e séries diretamente na tela do carro com legendas, retomada de progresso e controles de mídia.
   </p>
 
-  [Website](https://nuvio.tv) · [GitHub releases](https://github.com/NuvioMedia/NuvioMobile/releases/latest) · [Support Nuvio](https://nuvio.tv/support)
+  [Download NuvioAA.apk](https://github.com/ginjeira/NuvioAA/releases/latest) · [Repositório GitHub](https://github.com/ginjeira/NuvioAA)
 
 </div>
 
-## Nuvio Auto (NuvioAA)
+---
 
-Nuvio includes full Android Auto support built with Jetpack Car App Library 1.7.0 and Media3.
+## 🚗 Funcionalidades no Android Auto (NuvioAA)
 
-### Features
-- **Addon Catalog Browsing**: Browse categories, movies, series, and addons directly on the car display.
-- **Continue Watching / Resume**: Automatically resumes video playback from saved position.
-- **Subtitles Support**: Multi-language subtitle rendering in the car display.
-- **Media Session Integration**: Full media bar controls (Play, Pause, Fast-Forward, Rewind) and Audio Focus management.
+- **Navegação em Catálogos de Addons**: Explore categorias, filmes, séries e coleções dos seus addons do Stremio diretamente no ecrã do carro.
+- **Retoma de Progresso (*Continue Watching*)**: Retome a reprodução automaticamente do ponto exato onde parou.
+- **Suporte a Legendas**: Renderização nativa de legendas no ecrã do carro com preferência para Português (`pt`).
+- **Controles de Mídia & Foco de Áudio**: Integração total com a barra de mídia do sistema do carro (`MediaSession` / `Media3`) com comandos de Play, Pause e Avançar/Recuar.
+- **Execução com Navegação Lado a Lado**: Compatível com o layout Coolwalk, permitindo navegação enquanto o Waze ou Google Maps roda na outra janela.
 
-## Get Nuvio Mobile & Android Auto
+---
 
-- [Android on Google Play](https://play.google.com/store/apps/details?id=com.nuvio.app)
-- [Android APK (`NuvioAA.apk`)](https://github.com/NuvioMedia/NuvioMobile/releases/latest)
-- iOS via AltStore or SideStore: add [this source URL](https://raw.githubusercontent.com/NuvioMedia/NuvioMobile/cmp-rewrite/store.json) in the app's Sources section, then install Nuvio.
+## 📥 Obter o NuvioAA (`NuvioAA.apk`)
 
-## Build from source
+Faça o download da versão compilada mais recente diretamente no GitHub Releases:
 
-```bash
-git clone https://github.com/NuvioMedia/NuvioMobile.git
-cd NuvioMobile
-```
+👉 **[Download NuvioAA.apk no GitHub Releases](https://github.com/ginjeira/NuvioAA/releases/latest)**
 
-### Android & Android Auto (NuvioAA)
+---
 
-Android development requires Android Studio and the Android SDK.
+## 📲 Guia de Instalação no Telemóvel e Carro
 
-```bash
-./gradlew :androidApp:assembleFullDebug
-```
+Para que aplicativos de terceiros como o NuvioAA sejam reconhecidos pelo Android Auto sem serem bloqueados pelo sistema, recomendamos a instalação utilizando o **KingInstaller** com permissão **Shizuku**:
 
-The compiled APK will be generated at `NuvioAA.apk` in the root project folder.
+### Requisitos:
+1. **Shizuku** (disponível na Google Play Store para dar permissões de sistema sem root).
+2. **KingInstaller** (ou AAAD / AA-Store).
 
-### iOS
+### Passo a Passo:
+1. Abra o **Shizuku** e inicie o serviço (via depuração sem fios ou ADB).
+2. Abra o **KingInstaller** e autorize o acesso via Shizuku.
+3. No KingInstaller, selecione o ficheiro **`NuvioAA.apk`** descarregado.
+4. Marque a opção **"LineageOS / Overwrite package"** (se aplicável) e clique em **Install**.
+5. No telemóvel, abra o app **Android Auto**:
+   - Vá em **Configurações** ➔ toque 10 vezes em "Versão" para ativar as **Configurações de desenvolvedor**.
+   - No menu de desenvolvedor, ative a opção **"Fontes desconhecidas"** (*Unknown sources*).
+   - Defina o **"Modo do aplicativo"** (*Application mode*) para **Desenvolvedor** (*Developer*).
+6. Ligue o telemóvel ao carro (ou DHU) e abra o **NuvioAuto**!
 
-iOS development requires macOS and Xcode.
+---
 
-```bash
-env NUVIO_IOS_DISTRIBUTION=full xcodebuild \
-  -project iosApp/iosApp.xcodeproj \
-  -scheme iosApp \
-  -configuration Debug \
-  -sdk iphonesimulator \
-  -derivedDataPath build/ios-derived-full-simulator \
-  CODE_SIGNING_ALLOWED=NO \
-  build
-```
+## 🛠️ Como Compilar a Partir do Código-Fonte
 
-The shared app is built with Kotlin Multiplatform and Compose Multiplatform.
+### Requisitos
+- Android Studio Ladybug ou superior
+- JDK 17 / JDK 21
+- Android SDK com suporte para API 34+
 
-## License
+### Passo a Passo de Compilação
+
+1. Clone o repositório:
+   ```bash
+   git clone https://github.com/ginjeira/NuvioAA.git
+   cd NuvioAA
+   ```
+
+2. Compile o APK usando o Gradle:
+   ```bash
+   ./gradlew :androidApp:assembleFullDebug
+   ```
+
+3. O ficheiro APK compilado será gerado em:
+   `androidApp/build/outputs/apk/full/debug/androidApp-full-debug.apk`
+
+---
+
+## 📄 Licença
 
 [GNU General Public License v3.0](./LICENSE)
