@@ -26,7 +26,7 @@
 - **Navegação em Catálogos de Addons**: Explore categorias, filmes, séries e coleções dos seus addons do Stremio diretamente no ecrã do carro.
 - **Retoma de Progresso (*Continue Watching*)**: Retome a reprodução automaticamente do ponto exato onde parou.
 - **Suporte a Legendas**: Renderização nativa de legendas no ecrã do carro com preferência para Português (`pt`).
-- **Controles de Mídia & Foco de Áudio**: Integração total com a barra de mídia do sistema do carro (`MediaSession` / `Media3`) dengan comandos de Play, Pause e Avançar/Recuar.
+- **Controles de Mídia & Foco de Áudio**: Integração total com a barra de mídia do sistema do carro (`MediaSession` / `Media3`) com comandos de Play, Pause e Avançar/Recuar.
 - **Execução com Navegação Lado a Lado**: Compatível com o layout Coolwalk, permitindo navegação enquanto o Waze ou Google Maps roda na outra janela.
 
 ---
@@ -88,6 +88,15 @@ Para que aplicativos de terceiros como o NuvioAA sejam reconhecidos pelo Android
 
 3. O ficheiro APK compilado será gerado em:
    `androidApp/build/outputs/apk/full/debug/androidApp-full-debug.apk`
+
+---
+
+## 👥 Créditos & Agradecimentos
+
+Este projeto é uma adaptação comunitária (*fork*) do **[Nuvio](https://nuvio.tv)**. 
+Todo o mérito da aplicação principal, arquitetura Kotlin Multiplatform, suporte a addons, scrapers e design pertence inteiramente à **[equipa oficial do Nuvio (`NuvioMedia`)](https://github.com/NuvioMedia)**. 
+
+O único contributo deste repositório (*NuvioAA*) foi a integração e adaptação do módulo nativo para o **Android Auto**.
 
 ---
 
