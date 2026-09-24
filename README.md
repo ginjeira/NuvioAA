@@ -26,6 +26,12 @@
 
 ---
 
+## ⚠️ Nota Importante sobre Autenticação
+
+Devido a alterações no identificador do pacote (`applicationId` personalizado para `com.nuvio.auto`) e à necessidade de chaves de API / URIs de redirecionamento OAuth oficiais (Supabase, Trakt, Simkl) associadas ao projeto original, **as funcionalidades de autenticação e login direta podem não estar operacionais** nesta versão compilada de forma independente, sendo necessária orientação ou suporte da equipa oficial do Nuvio para alinhar os clientes de API e redirecionamentos externos.
+
+---
+
 ## 📥 Obter o NuvioAA (`NuvioAA.apk`)
 
 Faça o download da versão compilada mais recente diretamente no GitHub Releases:
