@@ -16,12 +16,17 @@
 
 ---
 
+> [!NOTE]
+> **Fork Não Oficial**: Este repositório é uma bifurcação (*fork*) não oficial do projeto original [NuvioMobile](https://github.com/NuvioMedia/NuvioMobile), desenvolvido de forma independente com o único propósito de adicionar suporte nativo ao **Android Auto (NuvioAA)**. Não possui afiliação oficial com a equipa de desenvolvimento do Nuvio.
+
+---
+
 ## 🚗 Funcionalidades no Android Auto (NuvioAA)
 
 - **Navegação em Catálogos de Addons**: Explore categorias, filmes, séries e coleções dos seus addons do Stremio diretamente no ecrã do carro.
 - **Retoma de Progresso (*Continue Watching*)**: Retome a reprodução automaticamente do ponto exato onde parou.
 - **Suporte a Legendas**: Renderização nativa de legendas no ecrã do carro com preferência para Português (`pt`).
-- **Controles de Mídia & Foco de Áudio**: Integração total com a barra de mídia do sistema do carro (`MediaSession` / `Media3`) com comandos de Play, Pause e Avançar/Recuar.
+- **Controles de Mídia & Foco de Áudio**: Integração total com a barra de mídia do sistema do carro (`MediaSession` / `Media3`) dengan comandos de Play, Pause e Avançar/Recuar.
 - **Execução com Navegação Lado a Lado**: Compatível com o layout Coolwalk, permitindo navegação enquanto o Waze ou Google Maps roda na outra janela.
 
 ---
