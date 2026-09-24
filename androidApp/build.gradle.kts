@@ -1,3 +1,4 @@
+import com.android.build.gradle.internal.api.BaseVariantOutputImpl
 import java.util.Properties
 
 fun readXcconfigValue(file: File, key: String): String? {
@@ -66,13 +67,15 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.nuvio.app"
+        applicationId = "com.nuvio.auto"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = releaseAppVersionCode
         versionName = releaseAppVersionName
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
+
+
 
     flavorDimensions += "distribution"
     productFlavors {
@@ -143,11 +146,7 @@ android {
     }
 }
 
-androidComponents {
-    onVariants(selector().withBuildType("debug")) { variant ->
-        variant.applicationId.set("com.nuviodebug.com")
-    }
-}
+
 
 sentry {
     includeProguardMapping.set(true)
@@ -173,6 +172,7 @@ sentry {
 
 dependencies {
     implementation(project(":composeApp"))
+    implementation(project(":car"))
     implementation(libs.androidx.appcompat)
     implementation(libs.compose.runtime)
     coreLibraryDesugaring(libs.desugar.jdk.libs)
@@ -184,3 +184,5 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:${libs.versions.composeMultiplatform.get()}")
     debugImplementation("androidx.compose.ui:ui-test-manifest:${libs.versions.composeMultiplatform.get()}")
 }
+
+

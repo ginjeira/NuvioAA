@@ -162,9 +162,14 @@
 
         <service
             android:name="com.nuvio.app.features.player.PlayerNowPlayingService"
-            android:exported="false"
+            android:exported="true"
             android:foregroundServiceType="mediaPlayback"
-            android:stopWithTask="false" />
+            android:stopWithTask="false">
+            <intent-filter>
+                <action android:name="androidx.media3.session.MediaSessionService" />
+                <action android:name="android.media.browse.MediaBrowserService" />
+            </intent-filter>
+        </service>
 
         <receiver
             android:name="com.nuvio.app.features.player.PlayerNowPlayingActionReceiver"

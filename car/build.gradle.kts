@@ -4,10 +4,10 @@ plugins {
 
 android {
     namespace = "com.nuvio.car"
-    compileSdk = 34
+    compileSdk = 37
 
     defaultConfig {
-        minSdk = 28
+        minSdk = 24
     }
 
     buildFeatures {
@@ -16,9 +16,9 @@ android {
 }
 
 dependencies {
-    implementation("androidx.car.app:app:1.3.0-beta01")
-    implementation("androidx.media3:media3-exoplayer:1.3.1")
-    implementation("androidx.media3:media3-session:1.3.1")
+    implementation(project(":composeApp"))
+    implementation("androidx.car.app:app:1.7.0")
+    implementation("androidx.media3:media3-session:1.8.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.0")
 }
 
