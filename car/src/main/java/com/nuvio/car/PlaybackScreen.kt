@@ -25,6 +25,9 @@ import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaSession
 import androidx.media3.ui.PlayerView
+import com.nuvio.app.features.player.AudioLanguageOption
+import com.nuvio.app.features.player.PlayerSettingsRepository
+import com.nuvio.app.features.player.SubtitleLanguageOption
 import com.nuvio.app.features.watchprogress.WatchProgressRepository
 
 class PlaybackScreen(
@@ -38,6 +41,7 @@ class PlaybackScreen(
     private var mediaSession: MediaSession? = null
     private var virtualDisplay: VirtualDisplay? = null
     private var presentation: Presentation? = null
+    private var lastPlaybackPosition: Long = -1L
 
     private val surfaceCallback = object : SurfaceCallback {
         override fun onSurfaceAvailable(surfaceContainer: SurfaceContainer) {
@@ -63,126 +67,154 @@ class PlaybackScreen(
                     useController = false
                 }
 
-                val audioAttributes = AudioAttributes.Builder()
-                    .setContentType(C.AUDIO_CONTENT_TYPE_MOVIE)
-                    .setUsage(C.USAGE_MEDIA)
-                    .build()
+                var player = exoPlayer
+                if (player == null) {
+                    val audioAttributes = AudioAttributes.Builder()
+                        .setContentType(C.AUDIO_CONTENT_TYPE_MOVIE)
+                        .setUsage(C.USAGE_MEDIA)
+                        .build()
 
-                val mediaItem = MediaItem.Builder()
-                    .setUri(videoUrl)
-                    .setMediaMetadata(
-                        MediaMetadata.Builder()
-                            .setTitle(contentTitle)
-                            .setArtist("Nuvio Auto")
-                            .setIsPlayable(true)
-                            .build()
-                    )
-                    .build()
+                    val mediaItem = MediaItem.Builder()
+                        .setUri(videoUrl)
+                        .setMediaMetadata(
+                            MediaMetadata.Builder()
+                                .setTitle(contentTitle)
+                                .setArtist("Nuvio Auto")
+                                .setIsPlayable(true)
+                                .build()
+                        )
+                        .build()
 
-                WatchProgressRepository.ensureLoaded()
-                val progressEntry = if (videoId.isNotBlank()) {
-                    WatchProgressRepository.uiState.value.byVideoId[videoId]
-                        ?: WatchProgressRepository.progressForVideo(videoId)
-                } else null
-                val resumePosition = progressEntry?.lastPositionMs?.takeIf { it > 0 } ?: 0L
-                if (resumePosition > 0) {
-                    Log.i("NuvioCar", "PlaybackScreen: Resuming playback from saved position $resumePosition ms")
-                }
+                    WatchProgressRepository.ensureLoaded()
+                    val progressEntry = if (videoId.isNotBlank()) {
+                        WatchProgressRepository.uiState.value.byVideoId[videoId]
+                            ?: WatchProgressRepository.progressForVideo(videoId)
+                    } else null
 
-                val player = ExoPlayer.Builder(carContext)
-                    .setSeekBackIncrementMs(10000L)
-                    .setSeekForwardIncrementMs(10000L)
-                    .build().apply {
-                        setAudioAttributes(audioAttributes, /* handleAudioFocus = */ true)
-                        setHandleAudioBecomingNoisy(true)
-
-                        trackSelectionParameters = trackSelectionParameters
-                            .buildUpon()
-                            .setPreferredTextLanguages("pt", "por", "pob", "pt-BR", "pt-PT", "pb", "en", "eng")
-                            .build()
-
-                        addListener(object : Player.Listener {
-                            override fun onPlayerError(error: PlaybackException) {
-                                Log.e("NuvioCar", "PlaybackScreen ExoPlayer error: ${error.message}", error)
-                            }
-                            override fun onIsPlayingChanged(isPlaying: Boolean) {
-                                Log.i("NuvioCar", "PlaybackScreen ExoPlayer isPlaying=$isPlaying")
-                                invalidate()
-                            }
-                        })
-
-                        setMediaItem(mediaItem, resumePosition)
-                        prepare()
-                        play()
-                    }
-                exoPlayer = player
-
-                val forwardingPlayer = object : ForwardingPlayer(player) {
-                    override fun getAvailableCommands(): Player.Commands {
-                        return super.getAvailableCommands()
-                            .buildUpon()
-                            .add(COMMAND_SEEK_TO_NEXT)
-                            .add(COMMAND_SEEK_TO_PREVIOUS)
-                            .add(COMMAND_SEEK_FORWARD)
-                            .add(COMMAND_SEEK_BACK)
-                            .add(COMMAND_SEEK_TO_NEXT_MEDIA_ITEM)
-                            .add(COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM)
-                            .build()
+                    val startPosition = if (lastPlaybackPosition > 0) {
+                        lastPlaybackPosition
+                    } else {
+                        progressEntry?.lastPositionMs?.takeIf { it > 0 } ?: 0L
                     }
 
-                    override fun isCommandAvailable(command: Int): Boolean {
-                        return when (command) {
-                            COMMAND_SEEK_TO_NEXT,
-                            COMMAND_SEEK_TO_PREVIOUS,
-                            COMMAND_SEEK_FORWARD,
-                            COMMAND_SEEK_BACK,
-                            COMMAND_SEEK_TO_NEXT_MEDIA_ITEM,
-                            COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM -> true
-                            else -> super.isCommandAvailable(command)
+                    PlayerSettingsRepository.ensureLoaded()
+                    val settings = PlayerSettingsRepository.uiState.value
+
+                    val subLangs = mutableListOf<String>()
+                    if (settings.preferredSubtitleLanguage.isNotBlank() && settings.preferredSubtitleLanguage != SubtitleLanguageOption.NONE) {
+                        subLangs.add(settings.preferredSubtitleLanguage)
+                    }
+                    settings.secondaryPreferredSubtitleLanguage?.takeIf { it.isNotBlank() }?.let {
+                        subLangs.add(it)
+                    }
+
+                    val audioLangs = mutableListOf<String>()
+                    if (settings.preferredAudioLanguage.isNotBlank() && settings.preferredAudioLanguage != AudioLanguageOption.DEVICE) {
+                        audioLangs.add(settings.preferredAudioLanguage)
+                    }
+                    settings.secondaryPreferredAudioLanguage?.takeIf { it.isNotBlank() }?.let {
+                        audioLangs.add(it)
+                    }
+
+                    player = ExoPlayer.Builder(carContext)
+                        .setSeekBackIncrementMs(10000L)
+                        .setSeekForwardIncrementMs(10000L)
+                        .build().apply {
+                            setAudioAttributes(audioAttributes, /* handleAudioFocus = */ true)
+                            setHandleAudioBecomingNoisy(true)
+
+                            val trackParamsBuilder = trackSelectionParameters.buildUpon()
+                            if (subLangs.isNotEmpty()) {
+                                trackParamsBuilder.setPreferredTextLanguages(*subLangs.toTypedArray())
+                            }
+                            if (audioLangs.isNotEmpty()) {
+                                trackParamsBuilder.setPreferredAudioLanguages(*audioLangs.toTypedArray())
+                            }
+                            trackSelectionParameters = trackParamsBuilder.build()
+
+                            addListener(object : Player.Listener {
+                                override fun onPlayerError(error: PlaybackException) {
+                                    Log.e("NuvioCar", "PlaybackScreen ExoPlayer error: ${error.message}", error)
+                                }
+                                override fun onIsPlayingChanged(isPlaying: Boolean) {
+                                    Log.i("NuvioCar", "PlaybackScreen ExoPlayer isPlaying=$isPlaying")
+                                    invalidate()
+                                }
+                            })
+
+                            setMediaItem(mediaItem, startPosition)
+                            prepare()
+                            play()
+                        }
+                    exoPlayer = player
+
+                    val forwardingPlayer = object : ForwardingPlayer(player) {
+                        override fun getAvailableCommands(): Player.Commands {
+                            return super.getAvailableCommands()
+                                .buildUpon()
+                                .add(COMMAND_SEEK_TO_NEXT)
+                                .add(COMMAND_SEEK_TO_PREVIOUS)
+                                .add(COMMAND_SEEK_FORWARD)
+                                .add(COMMAND_SEEK_BACK)
+                                .add(COMMAND_SEEK_TO_NEXT_MEDIA_ITEM)
+                                .add(COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM)
+                                .build()
+                        }
+
+                        override fun isCommandAvailable(command: Int): Boolean {
+                            return when (command) {
+                                COMMAND_SEEK_TO_NEXT,
+                                COMMAND_SEEK_TO_PREVIOUS,
+                                COMMAND_SEEK_FORWARD,
+                                COMMAND_SEEK_BACK,
+                                COMMAND_SEEK_TO_NEXT_MEDIA_ITEM,
+                                COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM -> true
+                                else -> super.isCommandAvailable(command)
+                            }
+                        }
+
+                        override fun seekToNext() {
+                            player.seekTo((player.currentPosition + 10000L).coerceAtMost(player.duration))
+                        }
+
+                        override fun seekToNextMediaItem() {
+                            seekToNext()
+                        }
+
+                        override fun seekToPrevious() {
+                            player.seekTo((player.currentPosition - 10000L).coerceAtLeast(0L))
+                        }
+
+                        override fun seekToPreviousMediaItem() {
+                            seekToPrevious()
                         }
                     }
 
-                    override fun seekToNext() {
-                        player.seekTo((player.currentPosition + 10000L).coerceAtMost(player.duration))
+                    val sessionCallback = object : MediaSession.Callback {
+                        @Suppress("UnstableApiUsage")
+                        override fun onConnect(
+                            session: MediaSession,
+                            controller: MediaSession.ControllerInfo
+                        ): MediaSession.ConnectionResult {
+                            Log.i("NuvioCar", "MediaSession: controller connected -> ${controller.packageName}")
+                            return MediaSession.ConnectionResult.AcceptedResultBuilder(session)
+                                .setAvailableSessionCommands(MediaSession.ConnectionResult.DEFAULT_SESSION_COMMANDS)
+                                .setAvailablePlayerCommands(MediaSession.ConnectionResult.DEFAULT_PLAYER_COMMANDS)
+                                .build()
+                        }
                     }
 
-                    override fun seekToNextMediaItem() {
-                        seekToNext()
-                    }
-
-                    override fun seekToPrevious() {
-                        player.seekTo((player.currentPosition - 10000L).coerceAtLeast(0L))
-                    }
-
-                    override fun seekToPreviousMediaItem() {
-                        seekToPrevious()
-                    }
+                    mediaSession = MediaSession.Builder(carContext, forwardingPlayer)
+                        .setCallback(sessionCallback)
+                        .build()
                 }
-
-                val sessionCallback = object : MediaSession.Callback {
-                    @Suppress("UnstableApiUsage")
-                    override fun onConnect(
-                        session: MediaSession,
-                        controller: MediaSession.ControllerInfo
-                    ): MediaSession.ConnectionResult {
-                        Log.i("NuvioCar", "MediaSession: controller connected -> ${controller.packageName}")
-                        return MediaSession.ConnectionResult.AcceptedResultBuilder(session)
-                            .setAvailableSessionCommands(MediaSession.ConnectionResult.DEFAULT_SESSION_COMMANDS)
-                            .setAvailablePlayerCommands(MediaSession.ConnectionResult.DEFAULT_PLAYER_COMMANDS)
-                            .build()
-                    }
-                }
-
-                mediaSession = MediaSession.Builder(carContext, forwardingPlayer)
-                    .setCallback(sessionCallback)
-                    .build()
 
                 playerView.player = player
                 rootLayout.addView(playerView)
 
                 presentation?.setContentView(rootLayout)
                 presentation?.show()
-                Log.i("NuvioCar", "PlaybackScreen: Presentation shown with ForwardingPlayer and full media bar controls!")
+                Log.i("NuvioCar", "PlaybackScreen: Presentation shown with persistent ExoPlayer!")
             } catch (e: Exception) {
                 Log.e("NuvioCar", "PlaybackScreen: Error setting up car video surface", e)
             }
@@ -191,12 +223,9 @@ class PlaybackScreen(
         override fun onSurfaceDestroyed(surfaceContainer: SurfaceContainer) {
             try {
                 Log.i("NuvioCar", "PlaybackScreen: onSurfaceDestroyed called")
-                mediaSession?.release()
-                mediaSession = null
-
-                exoPlayer?.stop()
-                exoPlayer?.release()
-                exoPlayer = null
+                exoPlayer?.let { player ->
+                    lastPlaybackPosition = player.currentPosition
+                }
                 
                 presentation?.dismiss()
                 presentation = null

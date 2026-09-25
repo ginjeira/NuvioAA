@@ -6,6 +6,7 @@ import androidx.car.app.Screen
 import androidx.car.app.model.*
 import androidx.media3.common.C
 import androidx.media3.common.TrackSelectionOverride
+import androidx.media3.common.Tracks
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 
@@ -15,26 +16,24 @@ class TrackSelectionScreen(
     private val player: ExoPlayer
 ) : Screen(carContext) {
 
+    private data class TrackInfo(
+        val group: Tracks.Group,
+        val groupIndex: Int,
+        val trackIndex: Int,
+        val trackType: Int,
+        val title: String,
+        val isSelected: Boolean
+    )
+
     override fun onGetTemplate(): Template {
         Log.i("NuvioCar", "TrackSelectionScreen: building track list")
         val tracks = player.currentTracks
         val listBuilder = ItemList.Builder()
 
-        listBuilder.addItem(
-            Row.Builder()
-                .setTitle("🚫 Desativar Legendas")
-                .setOnClickListener {
-                    Log.i("NuvioCar", "TrackSelectionScreen: disabling text tracks")
-                    player.trackSelectionParameters = player.trackSelectionParameters
-                        .buildUpon()
-                        .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, true)
-                        .build()
-                    screenManager.pop()
-                }
-                .build()
-        )
+        val audioTracks = mutableListOf<TrackInfo>()
+        val subtitleTracks = mutableListOf<TrackInfo>()
 
-        tracks.groups.forEach { group ->
+        tracks.groups.forEachIndexed { groupIndex, group ->
             val trackGroup = group.mediaTrackGroup
             val trackType = group.type
 
@@ -43,43 +42,83 @@ class TrackSelectionScreen(
                 val isSelected = group.isTrackSelected(i)
                 val lang = format.language ?: "auto"
                 val label = format.label ?: lang
-                
-                if (trackType == C.TRACK_TYPE_TEXT) {
-                    val title = if (isSelected) "✔ Legenda: $label" else "Legenda: $label"
-                    listBuilder.addItem(
-                        Row.Builder()
-                            .setTitle(title)
-                            .addText("Idioma: $lang")
-                            .setOnClickListener {
-                                Log.i("NuvioCar", "TrackSelectionScreen: selecting subtitle track $i ($lang)")
-                                player.trackSelectionParameters = player.trackSelectionParameters
-                                    .buildUpon()
-                                    .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, false)
-                                    .setOverrideForType(TrackSelectionOverride(trackGroup, i))
-                                    .build()
-                                screenManager.pop()
-                            }
-                            .build()
-                    )
-                } else if (trackType == C.TRACK_TYPE_AUDIO) {
-                    val title = if (isSelected) "✔ Áudio: $label" else "Áudio: $label"
-                    listBuilder.addItem(
-                        Row.Builder()
-                            .setTitle(title)
-                            .addText("Idioma: $lang (${format.channelCount} ch)")
-                            .setOnClickListener {
-                                Log.i("NuvioCar", "TrackSelectionScreen: selecting audio track $i ($lang)")
-                                player.trackSelectionParameters = player.trackSelectionParameters
-                                    .buildUpon()
-                                    .setOverrideForType(TrackSelectionOverride(trackGroup, i))
-                                    .build()
-                                screenManager.pop()
-                            }
-                            .build()
-                    )
+
+                val info = TrackInfo(
+                    group = group,
+                    groupIndex = groupIndex,
+                    trackIndex = i,
+                    trackType = trackType,
+                    title = label,
+                    isSelected = isSelected
+                )
+
+                if (trackType == C.TRACK_TYPE_AUDIO) {
+                    audioTracks.add(info)
+                } else if (trackType == C.TRACK_TYPE_TEXT) {
+                    subtitleTracks.add(info)
                 }
             }
         }
+
+        // Sort selected tracks to the top
+        audioTracks.sortByDescending { it.isSelected }
+        subtitleTracks.sortByDescending { it.isSelected }
+
+        if (audioTracks.isNotEmpty()) {
+            audioTracks.forEach { track ->
+                val title = if (track.isSelected) "✔ Áudio: ${track.title}" else "Áudio: ${track.title}"
+                listBuilder.addItem(
+                    Row.Builder()
+                        .setTitle(title)
+                        .setOnClickListener {
+                            Log.i("NuvioCar", "TrackSelectionScreen: switching audio track to ${track.title}")
+                            player.trackSelectionParameters = player.trackSelectionParameters
+                                .buildUpon()
+                                .clearOverridesOfType(C.TRACK_TYPE_AUDIO)
+                                .addOverride(TrackSelectionOverride(track.group.mediaTrackGroup, track.trackIndex))
+                                .build()
+                            screenManager.pop()
+                        }
+                        .build()
+                )
+            }
+        }
+
+        if (subtitleTracks.isNotEmpty()) {
+            subtitleTracks.forEach { track ->
+                val title = if (track.isSelected) "✔ Legenda: ${track.title}" else "Legenda: ${track.title}"
+                listBuilder.addItem(
+                    Row.Builder()
+                        .setTitle(title)
+                        .setOnClickListener {
+                            Log.i("NuvioCar", "TrackSelectionScreen: switching subtitle track to ${track.title}")
+                            player.trackSelectionParameters = player.trackSelectionParameters
+                                .buildUpon()
+                                .clearOverridesOfType(C.TRACK_TYPE_TEXT)
+                                .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, false)
+                                .addOverride(TrackSelectionOverride(track.group.mediaTrackGroup, track.trackIndex))
+                                .build()
+                            screenManager.pop()
+                        }
+                        .build()
+                )
+            }
+        }
+
+        listBuilder.addItem(
+            Row.Builder()
+                .setTitle("🚫 Desativar Legendas")
+                .setOnClickListener {
+                    Log.i("NuvioCar", "TrackSelectionScreen: disabling subtitles")
+                    player.trackSelectionParameters = player.trackSelectionParameters
+                        .buildUpon()
+                        .clearOverridesOfType(C.TRACK_TYPE_TEXT)
+                        .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, true)
+                        .build()
+                    screenManager.pop()
+                }
+                .build()
+        )
 
         return ListTemplate.Builder()
             .setTitle("Áudio e Legendas")
