@@ -216,8 +216,8 @@ internal fun AppLoadingContent(
             AppBrandWordmark(
                 contentDescription = stringResource(Res.string.app_brand_name),
                 modifier = Modifier
-                    .fillMaxWidth(0.48f)
-                    .height(44.dp),
+                    .fillMaxWidth(0.65f)
+                    .height(80.dp),
             )
             Spacer(modifier = Modifier.height(tokens.spacing.sectionGap))
             NuvioLoadingIndicator(color = tokens.colors.accent)
