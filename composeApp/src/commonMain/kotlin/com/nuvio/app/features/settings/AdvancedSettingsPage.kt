@@ -24,6 +24,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nuvio.app.core.ui.NuvioTokens
@@ -149,6 +151,7 @@ internal fun LazyListScope.advancedSettingsContent(
     }
     item {
         var backupStatus by rememberSaveable { mutableStateOf<String?>(null) }
+        val clipboardManager = LocalClipboardManager.current
 
         SettingsSection(
             title = "Cópia de Segurança (Backup & Restore)",
@@ -156,12 +159,30 @@ internal fun LazyListScope.advancedSettingsContent(
         ) {
             SettingsGroup(isTablet = isTablet) {
                 SettingsNavigationRow(
-                    title = "Exportar Configurações (Addons e Debrid)",
-                    description = backupStatus ?: "Gera a cópia de segurança em texto JSON dos seus addons e chaves",
+                    title = "Exportar Backup para Área de Transferência",
+                    description = backupStatus ?: "Copia todos os seus addons e chaves para a memória do telemóvel",
                     isTablet = isTablet,
                     onClick = {
                         val json = NuvioAABackupManager.exportBackupJson()
-                        backupStatus = if (json.isNotBlank()) "Backup gerado com sucesso!" else "Erro ao gerar backup"
+                        if (json.isNotBlank()) {
+                            clipboardManager.setText(AnnotatedString(json))
+                            backupStatus = "Backup copiado para a área de transferência com sucesso!"
+                        } else {
+                            backupStatus = "Erro ao gerar cópia de segurança"
+                        }
+                    },
+                )
+                SettingsNavigationRow(
+                    title = "Restaurar Backup da Área de Transferência",
+                    description = "Lê e aplica o backup guardado na área de transferência",
+                    isTablet = isTablet,
+                    onClick = {
+                        val text = clipboardManager.getText()?.text.orEmpty()
+                        if (text.isNotBlank() && NuvioAABackupManager.importBackupJson(text)) {
+                            backupStatus = "Configurações e addons restaurados com sucesso!"
+                        } else {
+                            backupStatus = "Nenhum backup válido encontrado na área de transferência"
+                        }
                     },
                 )
             }
