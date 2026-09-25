@@ -17,12 +17,13 @@
 ---
 
 > [!NOTE]
-> **Fork Não Oficial**: Este repositório é uma bifurcação (*fork*) não oficial do projeto original [NuvioMobile](https://github.com/NuvioMedia/NuvioMobile), desenvolvido de forma independente com o único propósito de adicionar suporte nativo ao **Android Auto (NuvioAA)**. Não possui afiliação oficial com a equipa de desenvolvimento do Nuvio.
+> **Fork Não Oficial**: Este repositório é uma bifurcação (*fork*) não oficial do projeto original [NuvioMobile](https://github.com/NuvioMedia/NuvioMobile), desenvolvido de forma independente com o único propósito de adicionar suporte nativo ao **Android Auto (NuvioAA)**. Possui identidade visual dedicada (ícone personalizado) e identificador de pacote dedicado (`com.nuvio.auto`). Não possui afiliação oficial com a equipa de desenvolvimento do Nuvio.
 
 ---
 
 ## 🚗 Funcionalidades no Android Auto (NuvioAA)
 
+- **Identidade Visual Própria**: Ícone de launcher e nome (`NuvioAA`) customizados para evitar conflitos com a aplicação original.
 - **Navegação em Catálogos de Addons**: Explore categorias, filmes, séries e coleções dos seus addons do Stremio diretamente no ecrã do carro.
 - **Retoma de Progresso (*Continue Watching*)**: Retome a reprodução automaticamente do ponto exato onde parou.
 - **Suporte a Legendas**: Renderização nativa de legendas no ecrã do carro com preferência para Português (`pt`).
