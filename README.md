@@ -1,8 +1,6 @@
 <div align="center">
 
-  <img src="https://nuvio.tv/assets/nuvio-app-logo-wordmark.webp" alt="NuvioAA" width="320" />
-
-  <h1>NuvioAA — Android Auto Media & Video Streamer</h1>
+  <h1>🚗 NuvioAA — Android Auto Media & Video Streamer</h1>
 
   <p>
     Aplicativo de mídia e streaming de vídeo de código aberto com suporte total ao <b>Android Auto</b>.
