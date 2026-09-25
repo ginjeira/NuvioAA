@@ -98,7 +98,7 @@ class PlaybackScreen(
 
                         trackSelectionParameters = trackSelectionParameters
                             .buildUpon()
-                            .setPreferredTextLanguage("pt")
+                            .setPreferredTextLanguages("pt", "por", "pob", "pt-BR", "pt-PT", "pb", "en", "eng")
                             .build()
 
                         addListener(object : Player.Listener {
@@ -216,7 +216,17 @@ class PlaybackScreen(
 
     override fun onGetTemplate(): Template {
         Log.i("NuvioCar", "PlaybackScreen: onGetTemplate called")
+        val trackAction = Action.Builder()
+            .setTitle("💬 Legendas/Áudio")
+            .setOnClickListener {
+                exoPlayer?.let { player ->
+                    screenManager.push(TrackSelectionScreen(carContext, player))
+                }
+            }
+            .build()
+
         val actionStrip = ActionStrip.Builder()
+            .addAction(trackAction)
             .addAction(Action.BACK)
             .build()
 
