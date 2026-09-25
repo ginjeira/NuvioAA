@@ -147,6 +147,26 @@ internal fun LazyListScope.advancedSettingsContent(
             }
         }
     }
+    item {
+        var backupStatus by rememberSaveable { mutableStateOf<String?>(null) }
+
+        SettingsSection(
+            title = "Cópia de Segurança (Backup & Restore)",
+            isTablet = isTablet,
+        ) {
+            SettingsGroup(isTablet = isTablet) {
+                SettingsNavigationRow(
+                    title = "Exportar Configurações (Addons e Debrid)",
+                    description = backupStatus ?: "Gera a cópia de segurança em texto JSON dos seus addons e chaves",
+                    isTablet = isTablet,
+                    onClick = {
+                        val json = NuvioAABackupManager.exportBackupJson()
+                        backupStatus = if (json.isNotBlank()) "Backup gerado com sucesso!" else "Erro ao gerar backup"
+                    },
+                )
+            }
+        }
+    }
 }
 
 @Composable
